@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-#define LISTSIZE 10000
+#define LISTSIZE 1000000
 
 // basic node structure
 typedef struct __node_t {
