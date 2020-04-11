@@ -4,36 +4,7 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-#define LISTSIZE 100000
-
-/* struct counter_t {
-	int value;
-	pthread_mutex_t lock;
-} struct counter_t c;
-
-void Counter_Init(counter_t *c) {
-	c->value = 0;
-	pthread_mutex_init(&c->lock, NULL);
-}
-
-void Counter_Increment(counter_t *c) {
-	pthread_mutex_lock(&c->lock);
-	c->value++;
-	pthread_mutex_unlock(&c->lock);
-}
-
-void Counter_Decrement(counter_t *c) {
-	pthread_mutex_lock(&c->lock);
-	c->value--;
-	pthread_mutex_unlock(&c->lock);
-}
-
-int Counter_Get(counter_t *c) {
-	pthread_mutex_lock(&c->lock);
-	int rc = c->value;
-	pthread_mutex_unlock(&c->lock);
-	return rc;
-} */
+#define LISTSIZE 10000
 
 // basic node structure
 typedef struct __node_t {
@@ -79,7 +50,6 @@ int List_Lookup(list_t *L, int key) {
 	while (curr) {
 		if (curr->key == key) {
 			rv = 0;
-			//printf("\t-> key: %d next: %p\n", key, curr->next); 
 			break;
 		}
 		curr = curr->next;
@@ -87,20 +57,6 @@ int List_Lookup(list_t *L, int key) {
 	pthread_mutex_unlock(&L->lock);
 	return rv; // now both success and failure
 }
-
-/* void destroy(list_t *L) {
-
-    list_t *current = L->head;
-    list_t *next;
-
-    while (current != NULL)
-    {
-       next = current->next;
-       free(current);
-       current = next;
-    }
-    *head = NULL;
-} */
 
 //																												------------------------Task_1()
 void * Task_1(void *L) {
@@ -161,6 +117,7 @@ int main(int argc, char *argv[]) {
 		"\tSample Size: %d\n\n", LISTSIZE);
 	printf("main: begin (thread id = %ld)\n", pthread_self());
 	
+	// initialize time structs and variables to hold execution time of each task
 	struct timeval start1, start2, start3;
 	struct timeval end1, end2, end3;
 	long t1_microsecs, t2_microsecs, t3_microsecs;
@@ -177,12 +134,14 @@ int main(int argc, char *argv[]) {
 	list_t L2;
 	List_Init(&L2);
 	
+	// initialize two threads to be used for the tasks
+	pthread_t p1, p2;
+	
 	/*
 		Task 1:
 			Info: Starting with an empty list, two threads running at the same time insert
 			1 million random integers each on the same list.
 	*/
-	pthread_t p1, p2;
 	gettimeofday(&start1, NULL);
 	
 	pthread_create(&p1, NULL, Task_1, &L);
@@ -202,7 +161,6 @@ int main(int argc, char *argv[]) {
 			Info: Starting with an empty list, one thread inserts 1 million random integers,
 			while another thread looks up 1 million random integers at the same time.
 	*/
-	//pthread_t p1, p2;
 	gettimeofday(&start2, NULL);
 	
 	pthread_create(&p1, NULL, Task_2Insert, &L2);
@@ -212,7 +170,7 @@ int main(int argc, char *argv[]) {
 	pthread_join(p1, NULL);
 	pthread_join(p2, NULL);
 	
-	// get time at end of task 1 and calculate execution time
+	// get time at end of task 2 and calculate execution time
 	gettimeofday(&end2, NULL);
 	t2_microsecs = ((end2.tv_sec*1e6 + end2.tv_usec) - (start2.tv_sec*1e6 + start2.tv_usec));
 	printf("\n\t-------Time of Task 2: %ld microseconds-------\n\n", t2_microsecs);
@@ -222,7 +180,6 @@ int main(int argc, char *argv[]) {
 			Info: Starting with a list containing 1 million random integers, two threads running
 			at the same time look up 1 million random integers each.
 	*/
-	//pthread_t p1, p2;
 	gettimeofday(&start3, NULL);
 	
 	pthread_create(&p1, NULL, Task_3, &L);
@@ -232,7 +189,7 @@ int main(int argc, char *argv[]) {
 	pthread_join(p1, NULL);
 	pthread_join(p2, NULL);
 	
-	// get time at end of task 1 and calculate execution time
+	// get time at end of task 3 and calculate execution time
 	gettimeofday(&end3, NULL);
 	t3_microsecs = ((end3.tv_sec*1e6 + end3.tv_usec) - (start3.tv_sec*1e6 + start3.tv_usec));
 	printf("\n\t-------Time of Task 3: %ld microseconds-------\n\n", t3_microsecs);
