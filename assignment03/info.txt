@@ -1,2 +1,2 @@
 1. Compile using gcc
-gcc -o concurrent_linked_list concurrent_linked_list.c  -lpthread -Wall -Werror
+gcc -o concurrent_linked_list concurrent_linked_list.c -lpthread -Wall -Werror
